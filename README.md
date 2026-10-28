@@ -15,7 +15,7 @@ AI 해설까지 로컬에서 보려면 `vercel dev`를 쓰고 `.env`에 `GEMINI_
 ## 배포 (Vercel)
 
 1. GitHub 저장소를 Vercel에 연결한다 (빌드 명령 없음, 루트 그대로 배포).
-2. Vercel 프로젝트 환경변수에 `GEMINI_API_KEY`를 넣는다. 모델을 바꾸려면 `GEMINI_MODEL`도 넣는다 (기본 `gemini-2.5-flash`).
+2. Vercel 프로젝트 환경변수에 `GEMINI_API_KEY`를 넣는다. 모델을 바꾸려면 `GEMINI_MODEL`도 넣는다 (기본 `gemini-3.8-flash`).
 3. 공유 링크 `/r?d=...`는 `vercel.json` rewrite로 `result.html`을 연다.
 
 ## 구조

@@ -5,7 +5,7 @@
 import { ELEMENTS, STEMS, stemIndexOf, sajuRelation } from '../js/saju.js';
 import { isMbti, mbtiScore } from '../js/mbti.js';
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const MODEL = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
 const TIMEOUT_MS = 25000;
 
 const SYSTEM_PROMPT = `너는 따뜻하고 재치 있는 궁합 해설가야. 반말로, 친구에게 말하듯 써.
