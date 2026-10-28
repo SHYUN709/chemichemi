@@ -5,8 +5,34 @@
 import { ELEMENTS, STEMS, stemIndexOf, sajuRelation } from '../js/saju.js';
 import { isMbti, mbtiScore } from '../js/mbti.js';
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+// 앞 모델이 과부하거나 쓸 수 없으면 다음 모델로 넘어간다.
+const MODELS = [
+  process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+  'gemini-flash-latest',
+  'gemini-flash-lite-latest',
+];
 const TIMEOUT_MS = 50000;
+
+function callGemini(model, prompt, apiKey, signal, withThinking) {
+  return fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+    signal,
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.9,
+        maxOutputTokens: 2048,
+        // 짧은 해설이라 깊게 생각할 필요가 없다. 기본값(높음)이면 응답이 수십 초 걸린다.
+        // 대체 모델은 이 옵션을 지원하지 않을 수 있어서 첫 모델에만 넣는다.
+        ...(withThinking && { thinkingConfig: { thinkingLevel: 'low' } }),
+        responseMimeType: 'application/json',
+        responseSchema: RESPONSE_SCHEMA,
+      },
+    }),
+  });
+}
 
 const SYSTEM_PROMPT = `너는 따뜻하고 재치 있는 궁합 해설가야. 반말로, 친구에게 말하듯 써.
 
@@ -85,26 +111,16 @@ export default async function handler(req, res) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-      signal: controller.signal,
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: [{ role: 'user', parts: [{ text: JSON.stringify(describe(a, b)) }] }],
-        generationConfig: {
-          temperature: 0.9,
-          maxOutputTokens: 2048,
-          // 짧은 해설이라 깊게 생각할 필요가 없다. 기본값(높음)이면 응답이 수십 초 걸린다.
-          thinkingConfig: { thinkingLevel: 'low' },
-          responseMimeType: 'application/json',
-          responseSchema: RESPONSE_SCHEMA,
-        },
-      }),
-    });
-
+    const prompt = JSON.stringify(describe(a, b));
+    let r;
+    for (const [i, model] of MODELS.entries()) {
+      r = await callGemini(model, prompt, apiKey, controller.signal, i === 0);
+      if (r.ok) break;
+      console.error('Gemini error', model, r.status, await r.text());
+      // 과부하(503)·한도(429)·없는 모델(404)·옵션 미지원(400)이면 다음 모델로 넘어간다.
+      if (![400, 404, 429, 503].includes(r.status)) break;
+    }
     if (!r.ok) {
-      console.error('Gemini error', r.status, await r.text());
       return res.status(502).json({ error: 'AI가 잠시 쉬고 있어요. 조금 뒤에 다시 시도해 주세요.' });
     }
 
