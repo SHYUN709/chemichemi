@@ -11,7 +11,8 @@ const MODELS = [
   'gemini-flash-latest',
   'gemini-flash-lite-latest',
 ];
-const TIMEOUT_MS = 50000;
+const TIMEOUT_MS = 55000;
+const ATTEMPT_MS = 18000;
 
 function callGemini(model, prompt, apiKey, signal, withThinking) {
   return fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
@@ -114,13 +115,22 @@ export default async function handler(req, res) {
     const prompt = JSON.stringify(describe(a, b));
     let r;
     for (const [i, model] of MODELS.entries()) {
-      r = await callGemini(model, prompt, apiKey, controller.signal, i === 0);
+      // 과부하인 모델은 503을 수십 초 뒤에 돌려주기도 해서, 모델마다 시간을 따로 잰다.
+      const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(ATTEMPT_MS)]);
+      try {
+        r = await callGemini(model, prompt, apiKey, signal, i === 0);
+      } catch (err) {
+        if (err.name !== 'TimeoutError') throw err;
+        console.error('Gemini timeout', model);
+        r = null;
+        continue;
+      }
       if (r.ok) break;
       console.error('Gemini error', model, r.status, await r.text());
       // 과부하(503)·한도(429)·없는 모델(404)·옵션 미지원(400)이면 다음 모델로 넘어간다.
       if (![400, 404, 429, 503].includes(r.status)) break;
     }
-    if (!r.ok) {
+    if (!r?.ok) {
       return res.status(502).json({ error: 'AI가 잠시 쉬고 있어요. 조금 뒤에 다시 시도해 주세요.' });
     }
 
