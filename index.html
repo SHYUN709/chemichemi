@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>케미케미 · 사주와 MBTI로 보는 궁합</title>
+  <meta name="description" content="두 사람의 생년월일과 MBTI로 타고난 기운과 대화 스타일 궁합을 알려 드려요.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="케미케미 · 우리 둘의 케미는 몇 점?">
+  <meta property="og:description" content="생년월일과 MBTI만 넣으면 사주·MBTI 궁합 리포트가 나와요.">
+  <!-- 2단계: <meta property="og:image" content="https://도메인/og.png"> -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body data-page="input">
+  <header class="site-head">
+    <a class="brand" href="./"><span class="seal">合</span>케미케미</a>
+  </header>
+
+  <main class="page">
+    <section class="intro">
+      <p class="eyebrow">사주 · MBTI 궁합</p>
+      <h1 class="display">우리 둘의 케미는<br>몇 점일까?</h1>
+      <p class="lede">생년월일로 <b>타고난 기운</b>을, MBTI로 <b>대화·생활 스타일</b>을 살펴봐요.</p>
+    </section>
+
+    <form id="chemi-form" class="pair-form" novalidate>
+      <div class="pair-cards" id="pair-cards"></div>
+      <p class="form-error" id="form-error" role="alert" hidden></p>
+      <button type="submit" class="btn btn-primary btn-wide" id="submit-btn">케미 확인하기</button>
+      <p class="hint center">생년월일은 이 기기 안에서만 계산하고, 어디에도 보내지 않아요.</p>
+    </form>
+  </main>
+
+  <footer class="site-foot">케미케미의 궁합 결과는 재미로 보는 콘텐츠예요.</footer>
+
+  <template id="person-tpl">
+    <fieldset class="card person">
+      <legend class="person-legend"><span class="person-tag"></span></legend>
+
+      <label class="field">
+        <span class="field-label">닉네임</span>
+        <input type="text" name="name" maxlength="10" autocomplete="off">
+      </label>
+
+      <div class="field">
+        <span class="field-label">생년월일</span>
+        <div class="seg" role="radiogroup" aria-label="달력 종류">
+          <label><input type="radio" name="cal" value="solar" checked><span>양력</span></label>
+          <label><input type="radio" name="cal" value="lunar"><span>음력</span></label>
+        </div>
+        <div class="date-row">
+          <input type="number" name="year" inputmode="numeric" placeholder="1998" min="1920" aria-label="태어난 해">
+          <select name="month" aria-label="태어난 달"></select>
+          <select name="day" aria-label="태어난 날"></select>
+        </div>
+        <label class="check" hidden>
+          <input type="checkbox" name="leap"><span>윤달이에요</span>
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="field-label">MBTI</span>
+        <select name="mbti"></select>
+      </label>
+    </fieldset>
+  </template>
+</body>
+</html>

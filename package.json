@@ -1,0 +1,13 @@
+{
+  "name": "chemichemi",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "dev": "serve -l 5173 ."
+  },
+  "devDependencies": {
+    "korean-lunar-calendar": "0.4.0",
+    "serve": "14.2.4"
+  }
+}
