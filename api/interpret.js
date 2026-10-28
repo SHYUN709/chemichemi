@@ -6,7 +6,7 @@ import { ELEMENTS, STEMS, stemIndexOf, sajuRelation } from '../js/saju.js';
 import { isMbti, mbtiScore } from '../js/mbti.js';
 
 const MODEL = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
-const TIMEOUT_MS = 25000;
+const TIMEOUT_MS = 50000;
 
 const SYSTEM_PROMPT = `너는 따뜻하고 재치 있는 궁합 해설가야. 반말로, 친구에게 말하듯 써.
 
@@ -94,7 +94,9 @@ export default async function handler(req, res) {
         contents: [{ role: 'user', parts: [{ text: JSON.stringify(describe(a, b)) }] }],
         generationConfig: {
           temperature: 0.9,
-          maxOutputTokens: 1024,
+          maxOutputTokens: 2048,
+          // 짧은 해설이라 깊게 생각할 필요가 없다. 기본값(높음)이면 응답이 수십 초 걸린다.
+          thinkingConfig: { thinkingLevel: 'low' },
           responseMimeType: 'application/json',
           responseSchema: RESPONSE_SCHEMA,
         },
